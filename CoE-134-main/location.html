@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+  integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+  crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+     crossorigin=""></script>
+</head>
+<style>
+  #mapid { height: 180px; }
+</style>
+<body>
+
+<!-- Sidebar -->
+<div class="w3-sidebar w3-bar-block w3-border-left" style="display:none" id="mySidebar">
+  <button onclick="w3_close()" class="w3-bar-item w3-large">Close &times;</button>
+  <a href="#" class="w3-bar-item w3-button">Link 1</a>
+  <a href="#" class="w3-bar-item w3-button">Link 2</a>
+  <a href="#" class="w3-bar-item w3-button">Link 3</a>
+</div>
+
+<!-- Page Content -->
+<div style="background-color:#7b1113">
+  <button class="w3-button w3-xxlarge" onclick="w3_open()" style="float:left;color:#ffb511">☰</button>
+  <div style="background-color:#7b1113">
+    <center><h1 style="display:inline-block;background-color:#7b1113; color:#ffb511">UPila</h1></center>
+  </div>
+</div>
+
+ <div id="mapid" style="min-width:100vw;min-height:100vh; width:100vh;"></div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-medium w3-center w3-tiny" style="background-color:#7b1113">
+  <p class="w3-medium" style="color:#ffb511">
+  A Coe 134 Project
+  </p>
+</footer>
+
+<script>
+//script for the menu button
+  function w3_open() {
+    document.getElementById("mapid").style.marginLeft = "25%";
+    document.getElementById("mySidebar").style.width = "25%";
+    document.getElementById("mySidebar").style.display = "block";
+    document.getElementById("openNav").style.display = 'none';
+  }
+  function w3_close() {
+    document.getElementById("mapid").style.marginLeft = "0%";
+    document.getElementById("mySidebar").style.display = "none";
+    document.getElementById("openNav").style.display = "inline-block";
+    }
+
+//set up the map
+  var mymap = L.map('mapid').setView([14.6529,  121.0587], 13);
+  L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      maxZoom: 18,
+      id: 'mapbox/streets-v11',
+      tileSize: 512,
+      zoomOffset: -1,
+      accessToken: 'pk.eyJ1Ijoic3RhcmtpZGdsZWVrMjUiLCJhIjoiY2tsMXVmcDM1MGhtbzJ3cWk3MjN4NXpxaSJ9.f6Rpki-EulmG7FEp_LcV6g'
+  }).addTo(mymap);
+
+  var popup = L.popup();
+
+  function onMapClick(e) {
+    popup
+        .setLatLng(e.latlng)
+        .setContent("You clicked the map at " + e.latlng.toString())
+        .openOn(mymap);
+  }
+  var marker = L.marker([14.65, 121.05]).addTo(mymap);
+
+  mymap.on('click', onMapClick);
+  L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYXNodHJheWNvcmlhbmRlcnMiLCJhIjoiY2s3Yjlvb3M5MDJjazN6bXk0enlyOW40ZyJ9.GE7pRIyba6XTR7tXPFCJkg', {
+      maxZoom: 18,
+      attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                  '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                  'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                  id: 'mapbox.streets'
+                }).addTo(mymap);
+
+</script>
+
+</body>
+</html>

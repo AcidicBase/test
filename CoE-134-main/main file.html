@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href="​https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+<!-- CSS for leaflet map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+  integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+  crossorigin=""></script>
+<style type = text.css>
+/* Header CSS */
+/* The sticky class is added to the header with JS when it reaches its scroll position */
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%
+}
+
+/* Add some top padding to the page content to prevent sudden quick movement (as the header gets a new position at the top of the page (position:fixed and top:0) */
+.sticky + .content {
+  padding-top: 102px;
+}
+
+/* Map CSS */
+#mapid {
+  z-index: 0;
+}
+
+
+/* Modal CSS */
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgb(0 0 0 / 20%);
+    border-radius: 5px;
+    float:left;
+}
+/* Mama mo label (for color legend bar) */
+.legend {
+    line-height: 18px;
+    color: #555;
+    float:left;
+}
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+/* Modal Header */
+.modal-header {
+  padding: 2px 16px;
+  background-color: #7b1113;
+  color: #ffb511;
+}
+.modal-header text{
+  align: center;
+}
+
+/* Modal Body */
+.modal-body {padding: 2px 16px;}
+
+/* Modal Footer */
+.modal-footer {
+  padding: 2px 16px;
+  background-color: #7b1113;
+  color: #ffb511;
+}
+
+/* Modal Content */
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #888;
+  width: 50%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  animation-name: animatetop;
+  animation-duration: 0.4s
+}
+
+/* Add Animation */
+@keyframes animatetop {
+  from {top: -300px; opacity: 0}
+  to {top: 0; opacity: 1}
+}
+
+/* The Close Button */
+.close, .closeInfo, .closeJeep{
+  color: #ffb511;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover, .close:focus,
+.closeInfo:hover, .closeInfo:focus,
+.closeJeep:hover, .closeJeep:focus {
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.img-left {
+  float: left;
+  padding-right: 10px;
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="w3-sidebar w3-bar-block w3-border-right" style="display:none" id="mySidebar">
+  <button onclick="w3_close()" style="text-align:center" class="w3-bar-item w3-large">Close</button>
+  <a  id="menuListStops" href="#" class="w3-bar-item w3-button">List of Stops</a>
+  <a  id="menuAddInfo" href="#" class="w3-bar-item w3-button">Add Stop Information</a>
+  <a href="#" class="w3-bar-item w3-button">Report Bugs</a>
+  <a href="#" class="w3-bar-item w3-button">Help</a>
+</div>
+
+<!-- List of stops modal -->
+<div id="stopsModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title w-100" style="text-align:center">List of Stops</h2>
+    </div>
+    <div class="modal-body">
+
+    <div class="row">
+      <div class="column" style="width:100px;margin-left:5%;">
+      <img class="img-fluid img-left" src="https://www.alimentarium.org/en/system/files/thumbnails/image/AL027-01_pomme_de_terre_0.jpg"/>
+      </div>
+      <div class="column" style="width:70%;margin-left:5%;">
+      <b>Vinzons</b><br>
+      🟡🟨🟢🟩🔴<br>
+      Estimated Waiting Time: 15 mins<br>
+      Last Updated: 3 minutes ago<br><br><br>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="column" style="width:100px;margin-left:5%;">
+        <img class="img-fluid img-left" src="/storage/emulated/0/134/CoE-134-main/images/PH.png"/>
+      </div>
+      <div class="column" style="width:70%;margin-left:5%;">
+        <b>Palma Hall (Back Side)</b><br>
+        🟡🟨<br>
+        Estimated Waiting Time:3 mins<br>
+        Last Updated: 3 minutes ago<br><br><br>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="column" style="width:100px;margin-left:5%;">
+      <img class="img-fluid img-left" src="images/EEE.png"/>
+      </div>
+      <div class="column" style="width:70%;margin-left:5%;">
+      <b>EEEI</b><br>
+      🟡🟨<br>
+      Estimated Waiting Time:3 mins<br>
+      Last Updated: 3 minutes ago<br><br><br>
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="column" style="width:100px;margin-left:5%;">
+      <img class="img-fluid img-left" src="images/TBA.png"/>
+      </div>
+      <div class="column" style="width:70%;margin-left:5%;margin-left:5%;">
+      <b>Bahay ng Alumni</b><br>
+      🟡🟨🟢🟩🔴<br>
+      Estimated Waiting Time:5 mins<br>
+      Last Updated: 3 minutes ago<br><br><br>
+      </div>
+    </div>
+
+        <div class="row">
+          <div class="column" style="width:100px;margin-left:5%;">
+      <img class="img-fluid img-left" src="images/Econ.png"/>
+      </div>
+      <div class="column" style="width:70%;margin-left:5%;">
+      <b>School of Economics</b><br>
+      🟡🟨🟢🟩🔴<br>
+      Estimated Waiting Time:5 mins<br>
+      Last Updated: 3 minutes ago<br><br><br>
+      </div>
+    </div>
+
+          <div class="row">
+            <div class="column" style="width:100px;margin-left:5%;">
+      <img class="img-fluid img-left" src="images/Shopping Center Left.png"/>
+      </div>
+      <div class="column" style="width:70%;margin-left:5%;">
+      <b>Shopping Center (Landbank Side)</b><br>
+      🟡🟨🟢🟩🔴<br>
+      Estimated Waiting Time:5 mins<br>
+      Last Updated: 3 minutes ago<br><br><br>
+      </div>
+    </div>
+
+          <div class="row">
+            <div class="column" style="width:100px;margin-left:5%;">
+      <img class="img-fluid img-left" src="images/SC Right.png"/>
+      </div>
+      <div class="column" style="width:70%;margin-left:5%;">
+      <b>Area 2</b><br>
+      🟡🟨🟢🟩🔴<br>
+      Estimated Waiting Time:5 mins<br>
+      Last Updated: 3 minutes ago<br><br><br>
+      </div>
+    </div>
+
+          <div class="row">
+            <div class="column" style="width:100px;margin-left:5%;">
+      <img class="img-fluid img-left" src="images/Molave.png"/>
+      </div>
+      <div class="column" style="width:70%;margin-left:5%;">
+      <b>Molave Dormitory</b><br>
+      🟡🟨🟢🟩🔴<br>
+      Estimated Waiting Time:5 mins<br>
+      Last Updated: 3 minutes ago<br><br><br>
+      </div>
+    </div>
+
+          <div class="row">
+            <div class="column" style="width:100px;margin-left:5%;">
+      <img class="img-fluid img-left" src="images/CHK.png"/>
+      </div>
+      <div class="column" style="width:70%;margin-left:5%;">
+      <b>College of Human Kinetics</b><br>
+      🟡🟨<br>
+      Estimated Waiting Time:5 mins<br>
+      Last Updated: 3 minutes ago<br><br><br>
+      </div>
+    </div>
+    </div>
+    <div class="modal-footer">
+      <!-- <span class="close" style="text-align:center">Close</span> -->
+      <button class="close modal-title w-100"> Close </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Ask Info Modal -->
+<div id="infoModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title w-100" style="text-align:center">Add Information</h2>
+    </div>
+    <div class="modal-body">
+      <p><br>
+      <b>Around how many people do you see around you?</b><br><br>
+      <input type="radio" id="zero" name="people" value="male">
+      <label for="zero">0</label><br>
+      <input type="radio" id="four" name="people" value="female">
+      <label for="four">1-4</label><br>
+      <input type="radio" id="ten" name="people" value="other">
+      <label for="ten">5-10</label><br>
+      <input type="radio" id="twenty" name="people" value="other">
+      <label for="twenty">11-20</label><br>
+      <input type="radio" id="other" name="people" value="other">
+      <label for="other">20+</label><br>
+      </p>
+    </div>
+    <div class="modal-footer" style="background-color:white;">
+      <span class="closeInfo modal-title w-100" style="color:black;text-align:center">Submit</span>
+      <!-- <button class="closeInfo modal-title w-100"> Close </button> -->
+    </div>
+  </div>
+
+</div>
+
+<div id="jeepModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title w-100" style="text-align:center">Add Information</h2>
+    </div>
+    <div class="modal-body">
+      <p><br>
+      <b>Which jeep(s) are you taking?</b><br><br>
+      <input type="radio" id="ikot" name="people" value="male">
+      <label for="ikot">Ikot</label><br>
+      <input type="radio" id="smNorth" name="people" value="female">
+      <label for="smNorth">SM North</label><br>
+      <input type="radio" id="philcoa" name="people" value="other">
+      <label for="philcoa">Philcoa</label><br>
+      <input type="radio" id="toki" name="people" value="other">
+      <label for="toki">Toki</label><br>
+      <input type="radio" id="katip" name="people" value="other">
+      <label for="katip">Katipunan</label><br>
+      </p>
+    </div>
+    <div class="modal-footer" style="background-color:white;">
+      <span class="closeJeep modal-title w-100" style="color:black;text-align:center">Submit</span>
+      <!-- <button class="closeInfo modal-title w-100"> Close </button> -->
+    </div>
+  </div>
+
+</div>
+
+<!-- Page Content -->
+<div style="min-width:100vw;min-height:100vh;">
+  <div style="background-color:#7b1113;min-height:10vh;min-width:100vw;" id="Header">
+    <button class="w3-button w3-xlarge" onclick="w3_open()" style="float:left;color:#ffb511">☰</button>
+    <div style="background-color:#7b1113">
+      <center><h1 style="display:inline-block;background-color:#7b1113; color:#ffb511"><b>UP</b>ila</h1></center>
+    </div>
+  </div>
+  <div id="mapid" style="min-width:100vw;min-height:90vh; width:100vw;"></div>
+
+
+<script type="text/javascript">
+//Keep header fixed
+  window.onscroll = function() {myFunction()};
+  var header = document.getElementById("Header");
+  var sticky = header.offsetTop;
+  function myFunction() {
+    if (window.pageYOffset > sticky) {
+      header.classList.add("sticky");
+    } else {
+      header.classList.remove("sticky");
+    }
+  }
+//script for the menu button
+  function w3_open() {
+    document.getElementById("mapid").style.marginLeft = "25%";
+    document.getElementById("mySidebar").style.width = "25%";
+    document.getElementById("mySidebar").style.display = "block";
+    document.getElementById("openNav").style.display = 'none';
+  }
+  function w3_close() {
+    document.getElementById("mapid").style.marginLeft = "0%";
+    document.getElementById("mySidebar").style.display = "none";
+    document.getElementById("openNav").style.display = "inline-block";
+    }
+//script for the list of stops
+    function stops_open() {
+        document.getElementById("mapid").style.marginRight = "50%";
+        document.getElementById("mySidebar").style.display = "none";
+        document.getElementById("listOfStops").style.width = "25%";
+        document.getElementById("listOfStops").style.display = "block";
+        document.getElementById("openNav").style.display = 'none';
+      }
+    function stops_close() {
+        document.getElementById("mapid").style.marginLeft = "0%";
+        document.getElementById("listOfStops").style.display = "none";
+        document.getElementById("openNav").style.display = "inline-block";
+    }
+
+//Modal Scripts
+  //Stops Modal
+  var modal = document.getElementById("stopsModal");
+  var btn = document.getElementById("menuListStops");
+  var span = document.getElementsByClassName("close")[0];
+
+  btn.onclick = function() {
+    modal.style.display = "block";
+  }
+
+  span.onclick = function() {
+    modal.style.display = "none";
+  }
+
+  //Info Modal
+  var infoModal = document.getElementById("infoModal");
+  var infobtn = document.getElementById("menuAddInfo");
+  var infospan = document.getElementsByClassName("closeInfo")[0];
+  //Jeep Modal
+  var jeepModal = document.getElementById("jeepModal");
+  var jeepspan = document.getElementsByClassName("closeJeep")[0];
+
+  infobtn.onclick = function() {
+    infoModal.style.display = "block";
+  }
+
+  infospan.onclick = function() {
+    infoModal.style.display = "none";
+    jeepModal.style.display = "block";
+  }
+
+  //Jeep Modal functions
+  jeepspan.onclick = function() {
+    jeepModal.style.display = "none";
+  }
+
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+    else if (event.target == infoModal) {
+      infoModal.style.display = "none";
+    } else if (event.target == jeepModal) {
+      infoModal.style.display = "none";
+    }
+  }
+
+// Leaflet Map Scripts
+  var map = L.map('mapid').setView([14.649784,121.068255], 17);
+  L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken: 'pk.eyJ1Ijoic3RhcmtpZGdsZWVrMjUiLCJhIjoiY2tsMXVmcDM1MGhtbzJ3cWk3MjN4NXpxaSJ9.f6Rpki-EulmG7FEp_LcV6g'
+  }).addTo(map);
+  //Icon definitions
+  var greenIcon = L.icon({
+    // iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    iconUrl: 'images/marker.png',
+    iconSize: [35, 35],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41] // point from which the popup should open relative to the iconAnchor
+  });
+  var stopIcon = L.icon({
+    iconUrl: 'images/stop.png',
+    iconSize: [41, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41] // point from which the popup should open relative to the iconAnchor
+  });
+  //Markers
+  var current_location = L.marker([14.649784,121.068255], {icon: greenIcon}).addTo(map);
+  var locations = [
+  ["<b>Vinzons</b><br>🟡🟨🟢🟩🔴<br>  Estimated Waiting Time:<br> 5 mins<br> Last Updated: <br> 3 minutes ago", 14.654404, 121.073087],
+  ["<b>Palma Hall (Back side)</b><br>🟡🟨🟢🟩🔴<br>  Estimated Waiting Time:<br> 8 mins<br> Last Updated: <br> 3 minutes ago", 14.652399, 121.068863],
+  ["<b>EEEI</b><br>🟡🟨<br>  Estimated Waiting Time:<br> 2 mins<br> Last Updated: <br> 3 minutes ago", 14.649856, 121.068631],
+  ["<b>Bahay ng Alumni</b><br>  🟡🟨<br>  Estimated Waiting Time:<br> 0 mins<br> Last Updated: <br> 3 minutes ago", 14.657449, 121.066396],
+  ["<b>School of Economics</b><br>  🟡🟨🟢🟩🔴<br>  Estimated Waiting Time:<br> 3 mins<br> Last Updated: <br> 3 minutes ago", 14.655885, 121.073072],
+  ["<b>Shopping Center (Landbank Side)</b><br>  🟡🟨🟢🟩🔴<br> Estimated Waiting Time:<br> 2 mins<br> Last Updated: <br> 5 minutes ago", 14.65943, 121.070224],
+  ["<b>Area 2</b><br>  🟡🟨🟢🟩🔴<br>  Estimated Waiting Time:<br> 1 mins<br> Last Updated: <br> 3 minutes ago", 14.65943, 121.068789],
+  ["<b>Molave Dormitory</b><br>  🟡🟨🟢🟩🔴<br>  Estimated Waiting Time:<br> 8 mins<br> Last Updated: <br> 3 minutes ago", 14.657687, 121.068548],
+  ["<b>College of Human Kinetics</b><br>  🟡🟨<br> Estimated Waiting Time:<br> 8 mins<br><br> Last Updated: <br> 3 minutes ago",14.657732, 121.062469]
+  ];
+  for (var i = 0; i < locations.length; i++) {
+  marker = new L.marker([locations[i][1], locations[i][2]], {icon: stopIcon})
+    .bindPopup(locations[i][0])
+    .addTo(map)
+    // open popups on mousehover
+    .on('mouseover', function (e) {
+      this.openPopup();
+    });
+  }
+
+  var legend = L.control({position: 'bottomleft'});
+
+  legend.onAdd = function (map) {
+
+      var div = L.DomUtil.create('div', 'info legend leaflet-control');
+
+      // loop through our density intervals and generate a label with a colored square for each interval
+          div.innerHTML += "Legend:<br><br>🟡 - Ikot <br>🟨 - Toki<br>🟢 - Philcoa <br>🟩 - SM North <br>🔴 - Katipunan <br>";
+
+      return div;
+  };
+
+  legend.addTo(map);
+
+
+  // Uncomment if you need to find out coordinates by clicking
+   // var popup = L.popup();
+   // function onMapClick(e) {
+   //   popup
+   //       .setLatLng(e.latlng)
+   //      .setContent("You clicked the map at " + e.latlng.toString())
+   //       .openOn(map);
+   // }
+   // map.on('click', onMapClick);
+
+
+</script>
+
+</body>
+</html>
